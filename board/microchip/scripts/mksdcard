@@ -1,0 +1,198 @@
+#!/bin/bash
+
+#
+# PIC32 BSP uSD Card Formatter
+# Joshua Henderson <joshua.henderson@microchip.com>
+#
+# Based on Flash Raspberry Pi SD card [buildroot]
+# Guillermo A. Amaral B. <g@maral.me>
+#
+
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+die()
+{
+    echo $@
+    exit 1
+}
+
+usage()
+{
+    echo "Usage: ${0} [DEVICE]"
+    echo "  Where DEVICE is the SD card device, for example: /dev/sdX"
+    echo
+    exit 0
+}
+
+confirm()
+{
+    echo
+    echo "You are about to reformat the following device node: ${DEVICE}"
+    echo
+    echo "If you are sure you want to continue? (Please write \"YES\" in all caps)"
+    read VAL
+
+    if [ "${VAL}" != "YES" ]; then
+	die "Aborted by user."
+    fi
+}
+
+CP=`which cp`
+FDISK=`which fdisk`
+MKDIR=`which mkdir`
+MKFS_EXT4=`which mkfs.ext4`
+MKFS_VFAT=`which mkfs.vfat`
+MOUNT=`which mount`
+RMDIR=`which rmdir`
+SYNC=`which sync`
+TAR=`which tar`
+GREP=`which grep`
+UMOUNT=`which umount`
+
+if [ -z "${CP}" ] ||
+   [ -z "${FDISK}" ] ||
+   [ -z "${MKDIR}" ] ||
+   [ -z "${MKFS_EXT4}" ] ||
+   [ -z "${MKFS_VFAT}" ] ||
+   [ -z "${MOUNT}" ] ||
+   [ -z "${RMDIR}" ] ||
+   [ -z "${TAR}" ] ||
+   [ -z "${GREP}" ] ||
+   [ -z "${UMOUNT}" ]; then
+	echo "Missing dependencies:\n"
+	echo "CP=${CP}"
+	echo "FDISK=${FDISK}"
+	echo "MKDIR=${MKDIR}"
+	echo "MKFS_EXT4=${MKFS_EXT4}"
+	echo "MKFS_VFAT=${MKFS_VFAT}"
+	echo "MOUNT=${MOUNT}"
+	echo "RMDIR=${RMDIR}"
+	echo "TAR=${TAR}"
+	echo "GREP=${GREP}"
+	echo "UMOUNT=${UMOUNT}"
+	exit 1
+fi
+
+DEVICE="${1}"
+
+if [ -z "${DEVICE}" ]; then
+
+    # Try to automatically find a USB removable media
+
+    USBKEYS=($(
+	${GREP} -Hv ^0$ /sys/block/*/removable |
+	sed s/removable:.*$/device\\/uevent/ |
+	xargs ${GREP} -H ^DRIVER=sd |
+	sed s/device.uevent.*$/size/ |
+	xargs ${GREP} -Hv ^0$ |
+	cut -d / -f 4
+	))
+
+    case ${#USBKEYS[@]} in
+	0 ) echo No USB removable media found; exit 0 ;;
+	1 ) STICK=$USBKEYS ;;
+	* )
+	    STICK=$(
+		bash -c "$(
+        echo -n  dialog --menu \
+            \"Choose which removable USB media to use.\" 22 76 17;
+        for dev in ${USBKEYS[@]} ;do
+            echo -n \ $dev \"$(
+                sed -e s/\ *$//g </sys/block/$dev/device/model
+                )\" ;
+            done
+        )" 2>&1 >/dev/tty
+	    )
+	    ;;
+    esac
+
+    [ "$STICK" ] || die "No removable media automatically found."
+
+    DEVICE=/dev/${STICK}
+fi
+
+if [ "${DEVICE}" = "-h" ] || [ "${DEVICE}" = "--help" ]; then
+    usage
+fi
+
+if [ ! -b "${DEVICE}" ]; then
+    die "${DEVICE} is not a block device!"
+fi
+
+USERID=`id -u`
+if [ ${USERID} -ne 0 ]; then
+    die "${0} requires root privileges to run."
+fi
+
+checkfile()
+{
+    [ -f "$1" ] || die "Required file $1 not found. Did you build?"
+}
+
+checkfile "output/images/uImage"
+checkfile "output/images/rootfs.tar"
+
+confirm
+
+for f in 1 2 3 4
+do
+    if ${MOUNT} | ${GREP} -q ${DEVICE}${f}; then
+	${UMOUNT} ${DEVICE}${f}
+    fi
+done
+if ${MOUNT} | ${GREP} -q ${DEVICE}; then
+    ${UMOUNT} ${DEVICE}
+fi
+
+echo "Partitioning SD card..."
+
+${FDISK} ${DEVICE} > /dev/null <<END
+o
+n
+p
+1
+
++128M
+n
+p
+2
+
+
+t
+1
+e
+a
+1
+w
+END
+
+sleep 2
+
+echo "Formatting partitions..."
+
+${MKFS_VFAT} -F 16 -n boot -I "${DEVICE}1" || exit 1
+${MKFS_EXT4} -F -q -L rootfs "${DEVICE}2" || exit 1
+
+${MKDIR} .mnt
+
+echo "Populating boot partition..."
+
+${MOUNT} "${DEVICE}1" .mnt || exit 2
+${CP} output/images/uImage .mnt
+${CP} output/images/*.dtb .mnt
+${CP} output/images/uEnv.txt .mnt
+${SYNC}
+${UMOUNT} .mnt
+
+echo "Populating rootfs partition..."
+
+${MOUNT} "${DEVICE}2" .mnt || exit 2
+${TAR} -xpsf output/images/rootfs.tar -C .mnt
+${SYNC}
+${UMOUNT} .mnt
+
+${RMDIR} .mnt
+
+echo "Finished!"
+
+exit 0

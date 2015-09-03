@@ -1,0 +1,12 @@
+bootcmd_uenv=run evkcheck; run bootcmd_mmcfat_ft
+bootcmd_mmcfat_ft=run commonargs mmcargs; run mmcfatload; run mmcfatloadft; run ftprepare; bootm ${loadaddr} - ${ftaddr}
+bootfile=uImage
+commonargs=setenv bootargs from-uboot=1 earlyprintk=ttyS1,115200n8r console=tty1 console=ttyS1,115200n8 devtmpfs.mount=1
+ftaddr=0x88C00000
+ftfile=pic32mzda_evk.dtb
+ftprepare=fdt addr ${ftaddr}; fdt resize; fdt chosen; fdt print /chosen
+loadaddr=0x88500000
+mmcargs=setenv bootargs ${bootargs} root=/dev/mmcblk0p2 rootfstype=ext4 init=linuxrc rootwait ro
+mmcfatload=fatload mmc 0 ${loadaddr} ${bootfile}
+mmcfatloadft=fatload mmc 0 ${ftaddr} ${ftfile}
+evkcheck=if gpio input 5; then setenv ftfile pic32mzda_sk.dtb ; else setenv ftfile pic32mzda_evk.dtb; fi

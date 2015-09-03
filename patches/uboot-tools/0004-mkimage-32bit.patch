@@ -1,0 +1,21 @@
+diff -Naur u-boot-2015.07/tools/mkimage.c u-boot-2015.07-mkimage32bit/tools/mkimage.c
+--- u-boot-2015.07/tools/mkimage.c	2015-07-14 10:32:21.000000000 -0700
++++ u-boot-2015.07-mkimage32bit/tools/mkimage.c	2015-09-23 12:43:31.216133999 -0700
+@@ -84,7 +84,7 @@
+ 			case 'a':
+ 				if (--argc <= 0)
+ 					usage ();
+-				params.addr = strtoul (*++argv, &ptr, 16);
++				params.addr = strtoull (*++argv, &ptr, 16);
+ 				if (*ptr) {
+ 					fprintf (stderr,
+ 						"%s: invalid load address %s\n",
+@@ -101,7 +101,7 @@
+ 			case 'e':
+ 				if (--argc <= 0)
+ 					usage ();
+-				params.ep = strtoul (*++argv, &ptr, 16);
++				params.ep = strtoull (*++argv, &ptr, 16);
+ 				if (*ptr) {
+ 					fprintf (stderr,
+ 						"%s: invalid entry point %s\n",

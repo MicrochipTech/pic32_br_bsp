@@ -1,0 +1,6 @@
+python
+import sys
+sys.path.insert(0, '/home/pic32/toolchain/crosstool-ng-1.21.0/../../pic32_br_bsp/toolchain/share/gcc-4.7.3/python')
+from libstdcxx.v6.printers import register_libstdcxx_printers
+register_libstdcxx_printers (None)
+end

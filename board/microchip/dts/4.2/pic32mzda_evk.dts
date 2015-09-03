@@ -1,0 +1,547 @@
+/*
+ * Copyright 2015 Microchip Technology, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/pic32mzda.h>
+
+#include "pic32mzda.dtsi"
+
+/ {
+	compatible = "microchip,pic32mzda-evk", "microchip,pic32mzda";
+	model = "Microchip PIC32MZDA EVK Board";
+
+	memory {
+		device_type = "memory";
+		reg = <0x08000000 0x08000000>;
+	};
+
+	chosen {
+		bootargs = "earlyprintk=ttyS1,115200n8r console=ttyS1,115200n8";
+	};
+
+	leds0 {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&user_leds_s0>;
+
+		led@1 {
+			label = "pic32mzda_sk:red:led1";
+			gpios = <&pioH 0 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "heartbeat";
+		};
+
+		led@2 {
+			label = "pic32mzda_sk:yellow:led2";
+			gpios = <&pioH 1 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "mmc0";
+		};
+
+		led@3 {
+			label = "pic32mzda_sk:green:led3";
+			gpios = <&pioH 2 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+	};
+
+	leds1 {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&user_leds_s1>;
+
+		led@4 {
+			label = "pic32mzda_evk:red:led4";
+			gpios = <&pioH 7 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+
+		led@5 {
+			label = "pic32mzda_evk:green:led5";
+			gpios = <&pioH 10 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+
+		led@6 {
+			label = "pic32mzda_evk:orange:led6";
+			gpios = <&pioH 9 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+	};
+
+	keys0 {
+		compatible = "gpio-keys";
+		pinctrl-0 = <&user_buttons_s0>;
+		pinctrl-names = "default";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		button@sw1 {
+			label = "ESC";
+			linux,code = <1>;
+			gpios = <&pioB 12 0>;
+		};
+
+		button@sw2 {
+			label = "Home";
+			linux,code = <102>;
+			gpios = <&pioB 13 0>;
+		};
+
+		button@sw3 {
+			label = "Menu";
+			linux,code = <139>;
+			gpios = <&pioB 14 0>;
+		};
+	};
+
+	keys1 {
+		compatible = "gpio-keys";
+		pinctrl-0 = <&user_buttons_s1>;
+		pinctrl-names = "default";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		button@sw4 {
+			label = "Up";
+			linux,code = <103>;
+			gpios = <&pioE 4 0>;
+		};
+
+		button@sw5 {
+			label = "Left";
+			linux,code = <105>;
+			gpios = <&pioB 5 0>;
+		};
+
+		button@sw6 {
+			label = "Enter";
+			linux,code = <28>;
+			gpios = <&pioK 1 0>;
+		};
+
+		button@sw7 {
+			label = "Right";
+			linux,code = <106>;
+			gpios = <&pioK 2 0>;
+		};
+
+		button@sw8 {
+			label = "Down";
+			linux,code = <108>;
+			gpios = <&pioG 6 0>;
+		};
+
+		button@sw9 {
+			label = "Esc";
+			linux,code = <1>;
+			gpios = <&pioH 11 0>;
+		};
+	};
+
+	sound {
+		compatible = "microchip,snd-pic32-proto";
+		microchip,cpu-dai = <&i2s1 &i2s1>;
+		microchip,audio-codec = <&wm8731>;
+	};
+
+	pwm1 {
+		compatible = "microchip,pic32-pwm";
+		microchip,timer = <&PBTIMER23>;
+		microchip,ocmp = <&OCMP1>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_oc1>;
+		status = "okay";
+	};
+
+	pwm4 {
+		compatible = "microchip,pic32-pwm";
+		microchip,timer = <&PBTIMER23>;
+		microchip,ocmp = <&OCMP4>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_oc4>;
+		status = "okay";
+	};
+
+	backlight {
+                compatible = "gpio-backlight";
+                pinctrl-names = "default";
+                pinctrl-0 = <&pinctrl_backlight>;
+                gpios = <&pioH 6 GPIO_ACTIVE_HIGH>;
+		default-on;
+        };
+};
+
+&eth0 {
+	mac-address = [00 00 00 00 00 00];
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_eth0>;
+	reset-gpio = <&pioJ 15 0>;
+	status = "okay";
+};
+
+&usart2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart2>;
+	status = "okay";
+};
+
+&usart4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart4>;
+        microchip,uart-has-rtscts;
+	status = "okay";
+};
+
+&usart6 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart6
+			&pinctrl_uart6_cts
+		        &pinctrl_uart6_rts>;
+        microchip,uart-has-rtscts;
+	status = "okay";
+};
+
+&lcd {
+	bits-per-pixel = <32>;
+	pic32,transp-length = <0>;
+	pic32,red-offset = <16>;
+	pic32,grayscale = <0>;
+	status = "okay";
+
+	display-timings {
+		native-mode = <&timing1>;
+
+		timing0: 480x272 {
+			pixclock = <40000000>;
+			clock-frequency = <40000000>;
+			hactive = <480>;
+			vactive = <272>;
+			hfront-porch = <1>;
+			hback-porch = <42>;
+			hsync-len = <2>;
+			vback-porch = <40>;
+			vfront-porch = <21>;
+			vsync-len = <23>;
+		};
+
+		timing1: 800x480 {
+			pixclock = <40000000>;
+			clock-frequency = <40000000>;
+			hactive = <800>;
+			hfront-porch = <48>;
+			hsync-len = <40>;
+			hback-porch = <88>;
+			vactive = <480>;
+			vfront-porch = <3>;
+			vsync-len = <13>;
+			vback-porch = <32>;
+		};
+	};
+};
+
+&i2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	status = "okay";
+};
+
+&i2c2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
+	wm8731: wm8731@1a {
+		compatible = "wlf,wm8731";
+		reg = <0x1a>;
+	};
+};
+
+&i2c3 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c3>;
+	status = "disabled";
+};
+
+&usb1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usb1>;
+	status = "okay";
+
+	usb_overcurrent@0 {
+		interrupt-parent = <&pioB>;
+		interrupts = <11 PIC32_CN_FALLING>;
+	};
+};
+
+&usb1_phy {
+	status = "okay";
+};
+
+&sdhci {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sdhc1>;
+	status = "okay";
+};
+
+&i2s1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2s1>;
+	status = "okay";
+};
+
+&spi4 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi4>;
+	status = "disabled";
+};
+
+&spi6 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_spi6>;
+	cs-gpios = <&pioC 1 GPIO_ACTIVE_LOW>;
+	status = "disabled";
+};
+
+&adc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_adc1>;
+	enabled-channel-mask = <0x10000000>;
+	resolution = <12>;
+	vref = <3300>;
+	status = "okay";
+
+	trigger@0 {
+		trigger-name = "int0-external-interrupt";
+		trigger-value = <4>;
+	};
+
+	trigger@1 {
+		trigger-name = "tmr1-match";
+		trigger-value = <5>;
+		microchip,timer = <&PBTIMER1>;
+	};
+
+	trigger@2 {
+		trigger-name = "tmr3-match";
+		trigger-value = <6>;
+		microchip,timer = <&PBTIMER23>;
+	};
+
+	trigger@3 {
+		trigger-name = "tmr5-match";
+		trigger-value = <7>;
+		microchip,timer = <&PBTIMER5>;
+	};
+};
+
+&pic32_pinctrl {
+
+	usb1 {
+		pinctrl_usb1: usb1_oc-0 {
+			pic32,single-pins = <PORT_B 11 PIC32_PIN_CONF_DG_IN>;
+		};
+	};
+
+	backlight {
+		pinctrl_backlight: backlight-0 {
+			pic32,single-pins = <PORT_H 6 PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	oc_pins1 {
+		pinctrl_oc1: ocmp1_pins {
+
+			pic32,pins = <PIC32_RP_OUT_RPB2 PIC32_PP_OUT_OC1
+					PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	oc_pins4 {
+		pinctrl_oc4: ocmp4_pins {
+
+			pic32,pins = <PIC32_RP_OUT_RPE5 PIC32_PP_OUT_OC4
+					PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	sdhc1 {
+		pinctrl_sdhc1: sdhc1_pins0 {
+			/* SDCLK */
+			pic32,single-pins = <PORT_A 6 PIC32_PIN_CONF_DG>,
+				<PORT_D 4 PIC32_PIN_CONF_DG>,	  /* SDCMD */
+				<PORT_G 13 PIC32_PIN_CONF_DG>,	  /* SDDATA0 */
+				<PORT_G 12 PIC32_PIN_CONF_DG>,	  /* SDDATA1 */
+				<PORT_G 14 PIC32_PIN_CONF_DG>,	  /* SDDATA2 */
+				<PORT_A 7 PIC32_PIN_CONF_DG>,	  /* SDDATA3 */
+				<PORT_A 0 PIC32_PIN_CONF_DG>;	  /* SDCD */
+		};
+	};
+
+	i2c1 {
+		pinctrl_i2c1: i2c1_0 {
+			pic32,single-pins = <PORT_A 14 PIC32_PIN_CONF_DG>,
+				<PORT_A 15 PIC32_PIN_CONF_DG>;
+		};
+	};
+
+	i2c2 {
+		pinctrl_i2c2: i2c2_0 {
+			pic32,single-pins = <PORT_A 3 PIC32_PIN_CONF_DG>,
+				<PORT_A 2 PIC32_PIN_CONF_DG>;
+		};
+	};
+
+	i2c3 {
+		pinctrl_i2c3: i2c3_0 {
+			pic32,single-pins = <PORT_F 8 PIC32_PIN_CONF_DG>,
+				<PORT_F 2 PIC32_PIN_CONF_DG>;
+		};
+	};
+
+	i2s1 {
+		pinctrl_i2s1: i2s1_0 {
+			pic32,single-pins = <PORT_D 1 PIC32_PIN_CONF_DG>;
+
+			pic32,pins = <PIC32_RP_IN_RPB10 PIC32_PP_IN_SDI1
+					PIC32_PIN_CONF_DG
+				PIC32_RP_OUT_RPD7 PIC32_PP_OUT_SDO1
+					PIC32_PIN_CONF_DG
+				PIC32_RP_IN_RPB15 PIC32_PP_IN_SS1
+					PIC32_PIN_CONF_DG
+				PIC32_RP_OUT_RPB15 PIC32_PP_OUT_SS1
+					PIC32_PIN_CONF_DG>;
+		};
+	};
+
+	spi4 {
+		pinctrl_spi4: spi4_0 {
+			pic32,single-pins = <PORT_D 10 PIC32_PIN_CONF_DG>;
+
+			pic32,pins = <PIC32_RP_IN_RPG7 PIC32_PP_IN_SDI4
+					PIC32_PIN_CONF_DG
+				PIC32_RP_OUT_RPB2 PIC32_PP_OUT_SDO4
+					PIC32_PIN_CONF_DG
+				PIC32_RP_IN_RPE9 PIC32_PP_IN_SS4
+					PIC32_PIN_CONF_DG
+				PIC32_RP_OUT_RPE9 PIC32_PP_OUT_SS4
+					PIC32_PIN_CONF_DG>;
+		};
+	};
+
+	spi6 {
+		pinctrl_spi6: spi6_0 {
+			pic32,single-pins = <PORT_D 15 PIC32_PIN_CONF_DG_OUT
+						PORT_C 1 PIC32_PIN_CONF_DG_OUT>;
+
+			pic32,pins = <PIC32_RP_IN_RPE8 PIC32_PP_IN_SDI6
+					PIC32_PIN_CONF_DG_IN
+				PIC32_RP_OUT_RPD5 PIC32_PP_OUT_SDO6
+					PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	eth0 {
+		pinctrl_eth0: eth0_0 {
+			pic32,single-pins = <PORT_D 11 PIC32_PIN_CONF_DG>,
+				<PORT_D 6 PIC32_PIN_CONF_DG>,
+				<PORT_H 13 PIC32_PIN_CONF_DG>,
+				<PORT_H 8 PIC32_PIN_CONF_DG>,
+				<PORT_H 8 PIC32_PIN_CONF_PD>,
+				<PORT_H 5 PIC32_PIN_CONF_DG>,
+				<PORT_H 5 PIC32_PIN_CONF_PD>,
+				<PORT_F 3 PIC32_PIN_CONF_DG>,
+				<PORT_J 11 PIC32_PIN_CONF_DG>,
+				<PORT_J 9 PIC32_PIN_CONF_DG>,
+				<PORT_J 8 PIC32_PIN_CONF_DG>,
+				<PORT_J 1 PIC32_PIN_CONF_DG>,
+				<PORT_J 15 PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	leds {
+		user_leds_s0: user_leds_s0 {
+			pic32,single-pins = <PORT_H 0 PIC32_PIN_CONF_DG_OUT
+				PORT_H 1 PIC32_PIN_CONF_DG_OUT
+				PORT_H 2 PIC32_PIN_CONF_DG_OUT>;
+		};
+
+		user_leds_s1: user_leds_s1 {
+			pic32,single-pins = <PORT_H 7 PIC32_PIN_CONF_DG_OUT
+				PORT_H 10 PIC32_PIN_CONF_DG_OUT
+				PORT_H 9 PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	buttons0 {
+		user_buttons_s0: user_buttons_s0 {
+			pic32,single-pins = <PORT_B 12 PIC32_PIN_CONF_PU_IN
+				PORT_B 13 PIC32_PIN_CONF_PU_IN
+				PORT_B 14 PIC32_PIN_CONF_PU_IN>;
+		};
+	};
+
+	buttons1 {
+		user_buttons_s1: user_buttons_s1 {
+			pic32,single-pins = <PORT_E 4 PIC32_PIN_CONF_DIN
+				PORT_B 5 PIC32_PIN_CONF_DG_IN
+				PORT_K 1 PIC32_PIN_CONF_DG_IN
+				PORT_K 2 PIC32_PIN_CONF_DG_IN
+				PORT_G 6 PIC32_PIN_CONF_DG_IN
+				PORT_H 11 PIC32_PIN_CONF_DG_IN>;
+		};
+	};
+
+	uart2 {
+		pinctrl_uart2: uart2-0 {
+			pic32,pins = <PIC32_RP_OUT_RPG9 PIC32_PP_OUT_U2TX
+					PIC32_PIN_CONF_DG_OUT
+				PIC32_RP_IN_RPB0 PIC32_PP_IN_U2RX
+					PIC32_PIN_CONF_DG_IN>;
+		};
+	};
+
+	uart4 {
+		pinctrl_uart4: uart4-0 {
+			pic32,pins = <PIC32_RP_OUT_RPC3 PIC32_PP_OUT_U4TX
+					PIC32_PIN_CONF_DG_OUT
+				PIC32_RP_IN_RPC2 PIC32_PP_IN_U4RX
+					PIC32_PIN_CONF_DG_IN>;
+		};
+	};
+
+	uart6 {
+		pinctrl_uart6: uart6-0 {
+			pic32,pins = <PIC32_RP_OUT_RPB8 PIC32_PP_OUT_U6TX
+					PIC32_PIN_CONF_DG_OUT
+				PIC32_RP_IN_RPD0 PIC32_PP_IN_U6RX
+					PIC32_PIN_CONF_DG_IN>;
+		};
+		pinctrl_uart6_cts: uart6_cts-0 {
+			pic32,pins = <PIC32_RP_IN_RPB9 PIC32_PP_IN_U6CTS
+					PIC32_PIN_CONF_DG_IN>;
+		};
+		pinctrl_uart6_rts: uart6_rts-0 {
+			pic32,pins = <PIC32_RP_OUT_RPC4 PIC32_PP_OUT_U6RTS
+					PIC32_PIN_CONF_DG_OUT>;
+		};
+	};
+
+	adc1 {
+		pinctrl_adc1: adc1_0 {
+			pic32,single-pins = <PORT_A 10 PIC32_PIN_CONF_AN_IN>;
+		};
+	};
+};

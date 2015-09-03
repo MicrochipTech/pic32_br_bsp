@@ -1,0 +1,12 @@
+config BR2_PACKAGE_STAGE1
+	bool "PIC32 stage1 Bootloader"
+	help
+	  PIC32 stage1 bootloader with flashing utility.
+
+#if BR2_PACKAGE_STAGE1
+#
+#config BR2_PACKAGE_STAGE1_PYTHON_WRAPPER
+#        bool "Python wrapper"
+#        help
+#          This option enables Python wrapper creation for libonrisc
+#endif
