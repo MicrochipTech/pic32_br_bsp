@@ -3,7 +3,7 @@
 # PIC32 stage1 Bootloader
 #
 #############################################################
-STAGE1_VERSION = 8c85406ad4a08bc33815f51014082404a27b3095
+STAGE1_VERSION = master
 STAGE1_SITE = $(call github,MicrochipTech,stage1,$(STAGE1_VERSION))
 STAGE1_LICENSE = Apache-2.0
 STAGE1_LICENSE_FILES = LICENSE
@@ -23,4 +23,4 @@ $(eval $(generic-package))
 
 .PHONY: flash
 flash: stage1
-	$(BUILD_DIR)/stage1-*/stage1.X/flash.sh
+	$(BUILD_DIR)/stage1-*/stage1.X/flash.sh $(HWTOOL)
