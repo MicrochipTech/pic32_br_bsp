@@ -113,9 +113,27 @@ The generated hex file will be put in output/images/.  This hex file includes bo
 
 ### Flashing the Bootloader
 
+The bootloaders can be flashed using a REAL ICE or by using the PKOB on the starter kit, based on the environment variable HWTOOL.
+
+To flash using a REAL ICE:
+1. Connect a MPLAB REAL ICE between a USB port on the host computer and the J4 connector on the evaluation kit. Make sure there is no jumper on J17 of the starter kit.
+
+2. From the buildroot directory:
+
 ```sh
-$ make flash
+$ make flash HWTOOL=RealICE
 ```
+3. The combined bootloader image will be written to the Boot and Program Flash memories of the PIC32 device.
+
+To flash using the PKOB on the starter kit:
+1. Connect a mini-USB cable between a USB port on the host computer and the DEBUG connector on the starter kit. Make sure there is a jumper on J17 of the starter kit.
+
+2. From the buildroot directory:
+
+```sh
+$ make flash HWTOOL=sk
+```
+3. The combined bootloader image will be written to the Boot and Program Flash memories of the PIC32 device.
 
 ### Bootloader Flashing FAQ
 
